@@ -1,4 +1,4 @@
-const CACHE_NAME = 'monotributo-v2';
+const CACHE_NAME = 'monotributo-v3';
 const ASSETS = [
   './index.html',
   './manifest.json',
