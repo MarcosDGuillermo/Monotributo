@@ -271,7 +271,7 @@ const hoyStr = () => new Date().toISOString().split('T')[0];
 const addDays= (str,d) => { const dt=new Date(str); dt.setDate(dt.getDate()+d); return dt.toISOString().split('T')[0]; };
 const diffDias=(a,b) => Math.round((new Date(b)-new Date(a))/864e5);
 const getCat  = ing => CATS.find(c=>ing<=c.tope)||null;
-const nubeActiva = () => API_URL && !API_URL.includes('https://script.google.com/macros/s/AKfycbyGTfcHYbm9M3xm6J9u59DG7NIR2uHwblubVOYF3K_tnUT-gafL-n3VhwYEJlhPCEuo/exec');
+const nubeActiva = () => API_URL && !API_URL.includes('PON_TU_URL_ACA');
 
 function setSyncStatus(txt,color){
   const el=document.getElementById('sync-status-c');
