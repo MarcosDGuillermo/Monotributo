@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#141217"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-title" content="Monotributo"/>
+<title>Mi Monotributo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{
+  --bg:#eef2e8;--surface:#fff;--surface-2:#f4f6ee;--border:#dbe2cf;--border-light:#e9edde;
+  --text:#33302f;--text-muted:#7d7a6e;--text-faint:#a8a598;
+  --green:#3f8f5f;--green-bg:#e6f3ea;--green-border:#a9d6b8;
+  --amber:#c1830f;--amber-bg:#faf0dc;--amber-border:#e8c877;
+  --red:#c23b52;--red-bg:#fbe9ed;--red-border:#eeb3c0;
+  --blue:#3d6b8c;--blue-bg:#e5eef3;--blue-border:#a9c7d8;
+  --accent:#a63d68;--accent-dark:#832f52;--accent-bg:#f6e3ec;
+  --radius:12px;--radius-lg:18px;
+  --mono:'Manrope',sans-serif;--sans:'Manrope',sans-serif;--display:'Fraunces',serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.55}
+.app-header{background:linear-gradient(120deg,#8a4267,#a63d68 55%,#c1683f);color:#fff;padding:18px 26px;display:flex;align-items:center;gap:14px;border-radius:0 0 22px 22px;box-shadow:0 6px 20px rgba(166,61,104,.18)}
+.app-header h1{font-family:var(--display);font-size:21px;font-weight:600}
+.app-header .sub{font-size:12px;color:#f3d9e4}
+#sync-status-c{font-size:11px;color:#f3d9e4;margin-left:auto}
+.body-wrap{max-width:640px;margin:0 auto;padding:26px 16px}
+.screen{display:none}.screen.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.metric{background:var(--surface-2);border:1px solid var(--border-light);border-radius:var(--radius);padding:11px 13px}
+.metric .lbl{font-size:10px;color:var(--text-muted);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.metric .val{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.metric .val.sm{font-size:13px}.metric .val.lg{font-size:26px;font-family:var(--display);font-weight:600}
+label{font-size:11px;color:var(--text-muted);display:block;margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+input[type=number],input[type=date],input[type=text],select{width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text);font-family:var(--sans);outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+.btn{padding:10px 18px;font-size:13px;font-family:var(--sans);font-weight:700;border-radius:999px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:background .15s}
+.btn:hover{background:var(--surface-2)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+.btn-sm{padding:4px 10px;font-size:11px;font-family:var(--sans);font-weight:700;border-radius:999px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--text-muted);transition:all .15s}
+.btn-sm:hover{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.alert{border-radius:var(--radius);padding:11px 15px;font-size:13px;margin-bottom:12px;border-left:4px solid;font-weight:500}
+.alert-ok{background:var(--green-bg);color:var(--green);border-color:var(--green)}
+.alert-warn{background:var(--amber-bg);color:var(--amber);border-color:var(--amber)}
+.alert-danger{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+.alert-info{background:var(--blue-bg);color:var(--blue);border-color:var(--blue)}
+.progress-bg{background:var(--surface-2);border:1px solid var(--border-light);border-radius:999px;height:8px;margin:6px 0;overflow:hidden}
+.progress-bar{height:100%;border-radius:999px;transition:width .4s}
+.desglose{width:100%;border-collapse:collapse;font-size:13px}
+.desglose td{padding:9px 4px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.desglose td:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.desglose tr.disabled td{color:var(--text-muted);text-decoration:line-through;opacity:.6}
+.desglose tr.total-row td{font-weight:800;font-size:14px;border-top:2px solid var(--text);border-bottom:none;padding-top:12px}
+.desglose tr.arba-row td{color:var(--blue)}
+.desglose tr.arba-row.disabled td{color:var(--text-muted)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.comp-card{border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px;cursor:pointer;transition:all .15s}
+.comp-card:hover{border-color:var(--accent)}
+.comp-card.active{border-color:var(--accent);background:var(--accent)}
+.comp-card .cc-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--text)}
+.comp-card.active .cc-title{color:#fff}
+.comp-card .cc-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.comp-card.active .cc-sub{color:rgba(255,255,255,.7)}
+.tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--surface-2);border-radius:999px;padding:4px}
+.tab{flex:1;padding:9px 10px;font-size:12px;font-weight:700;background:none;border:none;cursor:pointer;color:var(--text-muted);border-radius:999px;transition:background .15s,color .15s}
+.tab.active{background:var(--accent);color:#fff}
+.tab:hover:not(.active){background:var(--surface);color:var(--text)}
+.section{display:none}.section.active{display:block}
+.ftable{width:100%;border-collapse:collapse;font-size:13px}
+.ftable th{text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);padding:6px 8px;border-bottom:1px solid var(--border)}
+.ftable td{padding:8px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.ftable tr.fuera td{color:var(--text-muted)}
+.ftable tr.fuera .importe{text-decoration:line-through}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:999px;font-weight:700}
+.badge-in{background:var(--green-bg);color:var(--green)}
+.badge-out{background:var(--surface-2);color:var(--text-muted);border:1px solid var(--border)}
+.proy-box{background:var(--surface-2);border:1px solid var(--border-light);border-radius:var(--radius);padding:12px 14px;margin-top:8px}
+.proy-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.fecha-row{display:flex;align-items:flex-end;gap:10px}
+.fecha-row>div:first-child{flex:1}
+table.tabla{width:100%;font-size:12px;border-collapse:collapse}
+table.tabla th{text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);padding:5px 6px;border-bottom:1px solid var(--border);white-space:nowrap}
+table.tabla td{padding:7px 6px;border-bottom:1px solid var(--border-light);white-space:nowrap;font-variant-numeric:tabular-nums}
+.empty{text-align:center;padding:2.5rem;color:var(--text-muted);font-size:13px}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 32px rgba(51,40,45,.1)}
+.login-logo{font-family:var(--display);font-size:36px;font-weight:700;background:linear-gradient(120deg,#8a4267,#a63d68);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.login-sub{font-size:13px;color:var(--text-muted);margin-bottom:28px}
+.login-card label{text-align:left}
+.login-card input{margin-bottom:16px}
+#login-error{font-size:12px;color:var(--red);min-height:16px;margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<!-- PANTALLA LOGIN -->
+<div id="screen-login" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">// M</div>
+    <div class="login-sub">Control de Monotributo</div>
+    <label>Tu código de acceso</label>
+    <input type="text" id="login-codigo" placeholder="Ingresá tu código" autocomplete="off"
+      onkeydown="if(event.key==='Enter') ingresar()"/>
+    <div id="login-error"></div>
+    <button class="btn btn-primary" onclick="ingresar()" style="width:100%">Ingresar</button>
+    <div style="font-size:11px;color:var(--text-faint);margin-top:20px">Si no tenés un código, contactá a tu asesor.</div>
+  </div>
+</div>
+
+<!-- APP PRINCIPAL -->
+<div id="screen-app" style="display:none">
+  <div class="app-header">
+    <div>
+      <h1>Mi Monotributo</h1>
+      <div class="sub" id="header-nombre"></div>
+    </div>
+    <div id="sync-status-c" style="margin-left:auto;font-size:11px;color:#f3d9e4"></div>
+    <button class="btn" onclick="cerrarSesion()"
+      style="margin-left:12px;font-size:11px;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.14);border:none;color:#fff;font-weight:600">
+      Salir
+    </button>
+  </div>
+
+  <div class="body-wrap">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('cat')">Categoría</button>
+      <button class="tab" onclick="showTab('fac')">Facturas</button>
+      <button class="tab" onclick="showTab('tabla')">Tabla</button>
+    </div>
+
+    <!-- TAB CATEGORIZAR -->
+    <div id="tab-cat" class="section active">
+      <div class="card">
+        <div class="card-title">Parámetros</div>
+        <div class="g2" style="margin-bottom:12px">
+          <div>
+            <label>Tipo de actividad</label>
+            <select id="tipo" onchange="guardarPrefs();calc()">
+              <option value="s">Servicios / Locaciones</option>
+              <option value="b">Venta de cosas muebles</option>
+            </select>
+          </div>
+          <div>
+            <label>Categoría inscripta</label>
+            <select id="cat-act" onchange="guardarPrefs();calc()">
+              <option value="">-- Seleccioná --</option>
+              <option>A</option><option>B</option><option>C</option><option>D</option>
+              <option>E</option><option>F</option><option>G</option><option>H</option>
+              <option>I</option><option>J</option><option>K</option>
+            </select>
+          </div>
+        </div>
+        <label>Ingresos brutos anuales ($)</label>
+        <input type="number" id="ing" placeholder="Ej: 15000000" oninput="calc()"/>
+      </div>
+      <div class="card">
+        <div class="card-title">Componentes que pagás</div>
+        <div class="comp-grid">
+          <div class="comp-card active" id="cc-imp" onclick="toggleComp('imp')">
+            <div class="cc-title"><span class="dot" style="background:#378ADD"></span>Impuesto integrado</div>
+            <div class="cc-sub">IVA + Ganancias</div>
+          </div>
+          <div class="comp-card active" id="cc-sipa" onclick="toggleComp('sipa')">
+            <div class="cc-title"><span class="dot" style="background:#3f8f5f"></span>Aportes SIPA</div>
+            <div class="cc-sub">Jubilación</div>
+          </div>
+          <div class="comp-card active" id="cc-os" onclick="toggleComp('os')">
+            <div class="cc-title"><span class="dot" style="background:#639922"></span>Obra social</div>
+            <div class="cc-sub">Cobertura médica</div>
+          </div>
+          <div class="comp-card active" id="cc-arba" onclick="toggleComp('arba')">
+            <div class="cc-title"><span class="dot" style="background:#3d6b8c"></span>IIBB ARBA</div>
+            <div class="cc-sub">Régimen simplificado PBA</div>
+          </div>
+        </div>
+      </div>
+      <div id="resultado"></div>
+    </div>
+
+    <!-- TAB FACTURAS -->
+    <div id="tab-fac" class="section">
+      <div class="card">
+        <div class="card-title">Nueva factura</div>
+        <div class="g2" style="margin-bottom:12px">
+          <div><label>Fecha</label><input type="date" id="f-fecha"/></div>
+          <div><label>Importe ($)</label><input type="number" id="f-importe" placeholder="Ej: 500000"/></div>
+        </div>
+        <button class="btn btn-primary" onclick="agregarFactura()" style="width:100%">+ Agregar factura</button>
+        <div id="f-error" style="font-size:12px;color:var(--red);margin-top:6px;min-height:16px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Consultar acumulado a una fecha</div>
+        <div class="fecha-row">
+          <div><label>Fecha de consulta</label><input type="date" id="f-consulta"/></div>
+          <button class="btn" onclick="renderFacturas()">Calcular</button>
+          <button class="btn" onclick="resetConsulta()">Hoy</button>
+        </div>
+      </div>
+      <div id="resumen-rodante"></div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="card-title" style="margin-bottom:0">Mis facturas</div>
+          <div id="fac-count" style="font-size:12px;color:var(--text-muted)"></div>
+        </div>
+        <div id="fac-lista"></div>
+      </div>
+    </div>
+
+    <!-- TAB TABLA -->
+    <div id="tab-tabla" class="section">
+      <div class="card">
+        <label>Tipo de actividad</label>
+        <select id="tipo-tabla" onchange="renderTabla()">
+          <option value="s">Servicios / Locaciones</option>
+          <option value="b">Venta de cosas muebles</option>
+        </select>
+      </div>
+      <div class="card" style="overflow-x:auto"><div id="tabla-cont"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATOS (fallback — se sobreescribe con los del Sheet) ───────────
+const CATS_FALLBACK = [
+  {c:'A', tope:12009410.45,  imp_s:5585.77,    imp_b:5585.77,    sipa_s:18246.86, sipa_b:18246.86, os_s:25694.55, os_b:25694.55, arba_s:11505,  arba_b:10010},
+  {c:'B', tope:17595182.74,  imp_s:10612.98,   imp_b:10612.98,   sipa_s:20071.55, sipa_b:20071.55, os_s:25694.55, os_b:25694.55, arba_s:18720,  arba_b:16275},
+  {c:'C', tope:24670494.31,  imp_s:18246.86,   imp_b:16757.32,   sipa_s:22078.71, sipa_b:22078.71, os_s:25694.55, os_b:25694.55, arba_s:29260,  arba_b:25450},
+  {c:'D', tope:30628651.43,  imp_s:29790.79,   imp_b:27742.67,   sipa_s:24285.58, sipa_b:24285.58, os_s:30535.56, os_b:30535.56, arba_s:40685,  arba_b:35380},
+  {c:'E', tope:36028231.33,  imp_s:55857.73,   imp_b:44313.79,   sipa_s:26715.24, sipa_b:26715.24, os_s:37238.48, os_b:37238.48, arba_s:53850,  arba_b:46820},
+  {c:'F', tope:45151659.41,  imp_s:78573.20,   imp_b:57719.64,   sipa_s:29386.76, sipa_b:29386.76, os_s:42824.25, os_b:42824.25, arba_s:76250,  arba_b:66300},
+  {c:'G', tope:53995798.87,  imp_s:142995.76,  imp_b:71497.87,   sipa_s:41141.46, sipa_b:41141.46, os_s:46175.72, os_b:46175.72, arba_s:103490, arba_b:90000},
+  {c:'H', tope:81924680.37,  imp_s:409623.31,  imp_b:204811.64,  sipa_s:57598.04, sipa_b:57598.04, os_s:55485.33, os_b:55485.33, arba_s:179010, arba_b:155660},
+  {c:'I', tope:91699761.90,  imp_s:814591.79,  imp_b:325838.71,  sipa_s:80637.28, sipa_b:80637.28, os_s:68518.81, os_b:68518.81, arba_s:229420, arba_b:199505},
+  {c:'J', tope:105012519.20, imp_s:977510.14,  imp_b:391004.07,  sipa_s:112892.16,sipa_b:112892.16,os_s:78897.46, os_b:78897.46, arba_s:302140, arba_b:262730},
+  {c:'K', tope:126610838.75, imp_s:1368514.20, imp_b:456171.40,  sipa_s:158049.02,sipa_b:158049.02,os_s:87882.82, os_b:87882.82, arba_s:420750, arba_b:365870},
+];
+let CATS = [...CATS_FALLBACK];
+
+const CAT_COLORS = {A:'#3f8f5f',B:'#3f8f5f',C:'#3f8f5f',D:'#3f8f5f',E:'#c1830f',F:'#c1830f',G:'#c1830f',H:'#c1830f',I:'#c23b52',J:'#c23b52',K:'#c23b52'};
+const catColor = c => CAT_COLORS[c]||'#7d7a6e';
+
+// ── CONFIG — REEMPLAZÁ CON TU URL DE APPS SCRIPT ──────────────────
+const API_URL   = 'PON_TU_URL_ACA';
+const DATA_KEY  = 'monotributo_clientes_v2';
+const CATS_KEY  = 'monotributo_cats_v1';
+
+// ── ESTADO ────────────────────────────────────────────────────────
+let todosClientes = {};
+let miCodigo      = null;  // ID del cliente activo (clave en todosClientes)
+let pagando       = {imp:true,sipa:true,os:true,arba:true};
+let syncTimer     = null;
+
+// ── HELPERS ───────────────────────────────────────────────────────
+const fmt    = n => '$' + Math.round(n).toLocaleString('es-AR');
+const fmtF   = s => { const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; };
+const hoyStr = () => new Date().toISOString().split('T')[0];
+const addDays= (str,d) => { const dt=new Date(str); dt.setDate(dt.getDate()+d); return dt.toISOString().split('T')[0]; };
+const diffDias=(a,b) => Math.round((new Date(b)-new Date(a))/864e5);
+const getCat  = ing => CATS.find(c=>ing<=c.tope)||null;
+const nubeActiva = () => API_URL && !API_URL.includes('PON_TU_URL_ACA');
+
+function setSyncStatus(txt,color){
+  const el=document.getElementById('sync-status-c');
+  if(el){ el.textContent=txt; el.style.color=color||'#f3d9e4'; }
+}
+
+// ── CLIENTE ACTIVO ────────────────────────────────────────────────
+function miCliente(){ return todosClientes[miCodigo]||null; }
+
+// ── LOGIN ─────────────────────────────────────────────────────────
+async function ingresar(){
+  const codigo = document.getElementById('login-codigo').value.trim().toLowerCase();
+  const errEl  = document.getElementById('login-error');
+  if(!codigo){ errEl.textContent='Ingresá tu código.'; return; }
+
+  errEl.textContent='Verificando…';
+
+  await cargarNube();
+
+  // Buscar el código en los clientes (por id o por nombre normalizado)
+  let encontrado = null;
+  for(const [id,c] of Object.entries(todosClientes)){
+    const nombreNorm = c.nombre.toLowerCase().replace(/\s+/g,'');
+    if(id===codigo || nombreNorm===codigo || c.codigo===codigo){
+      encontrado = id;
+      break;
+    }
+  }
+
+  if(!encontrado){
+    errEl.textContent='Código no encontrado. Verificá con tu asesor.';
+    return;
+  }
+
+  miCodigo = encontrado;
+  try{ localStorage.setItem('mono_cliente_codigo', miCodigo); }catch(e){}
+
+  errEl.textContent='';
+  iniciarApp();
+}
+
+function cerrarSesion(){
+  try{ localStorage.removeItem('mono_cliente_codigo'); }catch(e){}
+  miCodigo=null;
+  document.getElementById('screen-login').style.display='flex';
+  document.getElementById('screen-app').style.display='none';
+  document.getElementById('login-codigo').value='';
+}
+
+function iniciarApp(){
+  const c = miCliente();
+  if(!c) return;
+  pagando = {...(c.pagando||{imp:true,sipa:true,os:true,arba:true})};
+
+  document.getElementById('header-nombre').textContent = c.nombre;
+  document.getElementById('tipo').value    = c.tipo||'s';
+  document.getElementById('cat-act').value = c.catActual||'';
+  document.getElementById('f-fecha').value = hoyStr();
+  document.getElementById('f-consulta').value = hoyStr();
+
+  ['imp','sipa','os','arba'].forEach(k=>{
+    const el=document.getElementById('cc-'+k);
+    if(el) el.classList.toggle('active', pagando[k]);
+  });
+
+  document.getElementById('screen-login').style.display='none';
+  document.getElementById('screen-app').style.display='block';
+  showTab('cat');
+}
+
+// ── SYNC NUBE ─────────────────────────────────────────────────────
+async function cargarNube(){
+  if(!nubeActiva()) return;
+  setSyncStatus('Sincronizando…','#c1830f');
+  try{
+    // Cargar CATS del Sheet
+    const resCats = await fetch(`${API_URL}?key=${CATS_KEY}`);
+    const txtCats = await resCats.text();
+    if(txtCats&&txtCats!=='null'){
+      const cats=JSON.parse(txtCats);
+      if(Array.isArray(cats)&&cats.length===11) CATS=cats;
+    }
+    // Cargar datos de clientes
+    const res  = await fetch(`${API_URL}?key=${DATA_KEY}`);
+    const txt  = await res.text();
+    if(txt&&txt!=='null') todosClientes=JSON.parse(txt);
+    setSyncStatus('Sincronizado ✓','#f3d9e4');
+  }catch(e){ setSyncStatus('Sin conexión','#c1830f'); }
+}
+
+async function subirNube(){
+  if(!nubeActiva()) return;
+  setSyncStatus('Guardando…','#c1830f');
+  try{
+    const res=await fetch(API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({key:DATA_KEY,value:JSON.stringify(todosClientes)})
+    });
+    const data=await res.json();
+    setSyncStatus(data.ok?'Sincronizado ✓':'Error','#f3d9e4');
+  }catch(e){ setSyncStatus('Sin conexión','#c1830f'); }
+}
+
+function guardarDatos(){
+  if(!miCodigo) return;
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(subirNube,800);
+}
+
+function guardarPrefs(){
+  const c=miCliente(); if(!c) return;
+  c.tipo      = document.getElementById('tipo').value;
+  c.catActual = document.getElementById('cat-act').value;
+  guardarDatos();
+}
+
+// ── TABS ──────────────────────────────────────────────────────────
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`[onclick="showTab('${t}')"]`).classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+  if(t==='tabla') renderTabla();
+  if(t==='fac')   renderFacturas();
+  if(t==='cat')   calc();
+}
+
+// ── COMPONENTES ───────────────────────────────────────────────────
+function toggleComp(k){
+  pagando[k]=!pagando[k];
+  document.getElementById('cc-'+k).classList.toggle('active',pagando[k]);
+  const c=miCliente(); if(c){ c.pagando=pagando; guardarDatos(); }
+  calc();
+}
+
+function calcPagado(cat,tipo){
+  const s=tipo==='s';
+  const imp=s?cat.imp_s:cat.imp_b,sipa=s?cat.sipa_s:cat.sipa_b;
+  const os=s?cat.os_s:cat.os_b,arba=s?cat.arba_s:cat.arba_b;
+  const total=imp+sipa+os+arba;
+  const pagado=(pagando.imp?imp:0)+(pagando.sipa?sipa:0)+(pagando.os?os:0)+(pagando.arba?arba:0);
+  return {imp,sipa,os,arba,total,pagado};
+}
+
+function desgloseHTML(cat,tipo){
+  const {imp,sipa,os,arba,total,pagado}=calcPagado(cat,tipo);
+  const ahorro=total-pagado;
+  const fila=(k,dot,lbl,val,extra)=>{
+    const dis=!pagando[k];
+    return `<tr class="${dis?'disabled':''} ${extra||''}"><td><span class="dot" style="background:${dot}"></span>${lbl}</td><td>${fmt(val)}</td></tr>`;
+  };
+  return `<table class="desglose">
+    ${fila('imp','#378ADD','Impuesto integrado',imp)}
+    ${fila('sipa','#3f8f5f','Aportes SIPA',sipa)}
+    ${fila('os','#639922','Obra social',os)}
+    ${fila('arba','#3d6b8c','IIBB ARBA',arba,'arba-row')}
+    <tr class="total-row"><td>Total a pagar</td><td>${fmt(pagado)}</td></tr>
+    ${ahorro>0?`<tr><td style="font-size:12px;color:var(--text-muted)">No seleccionados</td><td style="font-size:12px;color:var(--text-muted);text-align:right">- ${fmt(ahorro)}</td></tr>`:''}
+  </table>`;
+}
+
+// ── CATEGORIZAR ───────────────────────────────────────────────────
+function calc(){
+  const ing=parseFloat(document.getElementById('ing').value)||0;
+  const tipo=document.getElementById('tipo').value;
+  const catAct=document.getElementById('cat-act').value;
+  const el=document.getElementById('resultado');
+  if(!ing){el.innerHTML='';return;}
+  const cat=getCat(ing);
+  if(!cat){el.innerHTML=`<div class="alert alert-danger">Superás el tope de categoría K. Consultá con tu asesor.</div>`;return;}
+  const {total,pagado}=calcPagado(cat,tipo);
+  const porc=Math.min(100,(ing/cat.tope)*100);
+  const barColor=porc>=90?'#c23b52':porc>=70?'#c1830f':'#3f8f5f';
+  let alerta='';
+  if(catAct&&catAct!==cat.c){
+    const ia=CATS.findIndex(x=>x.c===catAct),ic=CATS.findIndex(x=>x.c===cat.c);
+    alerta=ic>ia
+      ?`<div class="alert alert-danger">Debés recategorizarte a <strong>categoría ${cat.c}</strong>. Consultá con tu asesor.</div>`
+      :`<div class="alert alert-warn">Podrías bajar a <strong>categoría ${cat.c}</strong> y pagar menos. Consultá con tu asesor.</div>`;
+  } else if(catAct===cat.c) alerta=`<div class="alert alert-ok">Tu categoría (${catAct}) es la correcta.</div>`;
+  el.innerHTML=`${alerta}
+    <div class="g3">
+      <div class="metric"><div class="lbl">Categoría</div><div class="val lg" style="color:${catColor(cat.c)}">${cat.c}</div></div>
+      <div class="metric"><div class="lbl">A pagar este mes</div><div class="val sm">${fmt(pagado)}</div></div>
+      <div class="metric"><div class="lbl">Cuota completa</div><div class="val sm" style="color:var(--text-muted)">${fmt(total)}</div></div>
+    </div>
+    <div class="card"><div class="card-title">Desglose mensual</div>${desgloseHTML(cat,tipo)}</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:4px">
+        <span>Uso del tope</span><span>${Math.round(porc)}%</span>
+      </div>
+      <div class="progress-bg"><div class="progress-bar" style="width:${porc}%;background:${barColor}"></div></div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Margen disponible: ${fmt(cat.tope-ing)}</div>
+    </div>
+    ${porc>=80?`<div class="alert alert-warn">Usaste el ${Math.round(porc)}% del tope. Revisá con tu asesor antes de la próxima recategorización.</div>`:''}`;
+}
+
+// ── FACTURAS ──────────────────────────────────────────────────────
+function acumuladoA(desdeStr){
+  const c=miCliente(); if(!c) return 0;
+  const desde=new Date(desdeStr);
+  const hace12=new Date(desdeStr); hace12.setFullYear(hace12.getFullYear()-1); hace12.setDate(hace12.getDate()+1);
+  return (c.facturas||[]).filter(f=>{
+    const fd=new Date(f.fecha); return fd>=hace12&&fd<=desde;
+  }).reduce((s,f)=>s+f.importe,0);
+}
+
+function agregarFactura(){
+  const fecha=document.getElementById('f-fecha').value;
+  const importe=parseFloat(document.getElementById('f-importe').value);
+  const errEl=document.getElementById('f-error');
+  if(!fecha){errEl.textContent='Ingresá una fecha.';return;}
+  if(!importe||importe<=0){errEl.textContent='Ingresá un importe válido.';return;}
+  errEl.textContent='';
+  const c=miCliente(); if(!c) return;
+  if(!c.facturas) c.facturas=[];
+  c.facturas.push({id:Date.now(),fecha,importe});
+  c.facturas.sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  guardarDatos();
+  document.getElementById('f-fecha').value=hoyStr();
+  document.getElementById('f-importe').value='';
+  renderFacturas();
+}
+
+function eliminarFactura(id){
+  const c=miCliente(); if(!c) return;
+  c.facturas=(c.facturas||[]).filter(f=>f.id!==id);
+  guardarDatos(); renderFacturas();
+}
+
+function resetConsulta(){ document.getElementById('f-consulta').value=hoyStr(); renderFacturas(); }
+
+function calcProyeccion(acum,cat,consultaStr){
+  const c=miCliente(); if(!cat||!c) return null;
+  const facs=(c.facturas||[]).filter(f=>f.fecha<=consultaStr);
+  if(!facs.length) return null;
+  const hace90=new Date(consultaStr); hace90.setDate(hace90.getDate()-90);
+  const rec=facs.filter(f=>new Date(f.fecha)>=hace90);
+  const totalRec=rec.reduce((s,f)=>s+f.importe,0);
+  const diasV=Math.min(90,diffDias(facs[facs.length-1].fecha,consultaStr)+1);
+  if(diasV<=0) return null;
+  const prom=totalRec/diasV; if(prom<=0) return null;
+  const margen=cat.tope-acum;
+  if(margen<=0) return {superado:true,prom};
+  const dias=Math.ceil(margen/prom), fecha=addDays(consultaStr,dias);
+  const proxCat=CATS[CATS.findIndex(x=>x.c===cat.c)+1];
+  let diasProx=null,fechaProx=null;
+  if(proxCat&&proxCat.tope-acum>0){ diasProx=Math.ceil((proxCat.tope-acum)/prom); fechaProx=addDays(consultaStr,diasProx); }
+  return {dias,fecha,prom,proxCat,diasProx,fechaProx,superado:false};
+}
+
+function renderFacturas(){
+  if(!miCodigo) return;
+  const c=miCliente(); if(!c) return;
+  pagando={...(c.pagando||{imp:true,sipa:true,os:true,arba:true})};
+  ['imp','sipa','os','arba'].forEach(k=>{
+    const el=document.getElementById('cc-'+k);
+    if(el) el.classList.toggle('active',pagando[k]);
+  });
+  const consultaStr=document.getElementById('f-consulta').value||hoyStr();
+  const esHoy=consultaStr===hoyStr();
+  const acum=acumuladoA(consultaStr);
+  const cat=getCat(acum);
+  const tipo=document.getElementById('tipo').value;
+  const porc=cat?Math.min(100,(acum/cat.tope)*100):100;
+  const barColor=porc>=90?'#c23b52':porc>=70?'#c1830f':'#3f8f5f';
+  const margen=cat?cat.tope-acum:0;
+  const {pagado,total}=cat?calcPagado(cat,tipo):{pagado:0,total:0};
+  let alertaR='';
+  if(!cat) alertaR=`<div class="alert alert-danger">Superaste el tope de categoría K. Consultá con tu asesor.</div>`;
+  else if(porc>=90) alertaR=`<div class="alert alert-danger">Acumulado en ${Math.round(porc)}% del tope ${cat.c}. Contactá a tu asesor.</div>`;
+  else if(porc>=75) alertaR=`<div class="alert alert-warn">Acumulado en ${Math.round(porc)}% del tope ${cat.c}.</div>`;
+  else if(cat) alertaR=`<div class="alert alert-ok">Dentro de categoría ${cat.c}. Margen: ${fmt(margen)}.</div>`;
+  const proy=calcProyeccion(acum,cat,consultaStr);
+  let proyHTML='';
+  if(proy&&!proy.superado){
+    proyHTML=`<div class="proy-box"><div class="proy-title">Proyección al ritmo actual</div>
+      <div class="g2" style="gap:8px">
+        <div class="metric"><div class="lbl">Promedio diario</div><div class="val sm">${fmt(proy.prom)}</div></div>
+        <div class="metric"><div class="lbl">Tope ${cat.c} en</div><div class="val sm">${proy.dias>365?'+1 año':proy.dias+' días'}</div>
+          ${proy.dias<=365?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${fmtF(proy.fecha)}</div>`:''}
+        </div>
+        ${proy.proxCat&&proy.diasProx?`<div class="metric" style="grid-column:1/-1"><div class="lbl">Salto a cat. ${proy.proxCat.c} en</div><div class="val sm">${proy.diasProx>365?'+1 año':proy.diasProx+' días'}${proy.diasProx<=365?' — '+fmtF(proy.fechaProx):''}</div></div>`:''}
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:8px">Basado en los últimos 90 días.</div>
+    </div>`;
+  } else if(proy?.superado){
+    proyHTML=`<div class="alert alert-danger" style="margin-top:8px">Ya superaste el tope al ritmo actual. Consultá con tu asesor.</div>`;
+  }
+  document.getElementById('resumen-rodante').innerHTML=`<div class="card">
+    <div class="card-title">Acumulado rodante · 12 meses al ${esHoy?'<span style="color:var(--green)">hoy</span>':fmtF(consultaStr)}</div>
+    ${alertaR}
+    <div class="g4">
+      <div class="metric"><div class="lbl">Acumulado</div><div class="val sm">${fmt(acum)}</div></div>
+      <div class="metric"><div class="lbl">Categoría</div><div class="val lg" style="color:${cat?catColor(cat.c):'var(--red)'}">${cat?cat.c:'—'}</div></div>
+      <div class="metric"><div class="lbl">Margen al tope</div><div class="val sm">${cat?fmt(margen):'—'}</div></div>
+      <div class="metric"><div class="lbl">A pagar este mes</div><div class="val sm">${fmt(pagado)}</div>
+        ${total!==pagado?`<div style="font-size:10px;color:var(--text-muted);margin-top:2px">Completa: ${fmt(total)}</div>`:''}
+      </div>
+    </div>
+    ${cat?`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:4px"><span>Uso del tope ${cat.c} — ${fmt(cat.tope)}</span><span>${Math.round(porc)}%</span></div>
+    <div class="progress-bg"><div class="progress-bar" style="width:${porc}%;background:${barColor}"></div></div>
+    <div style="margin-top:12px"><div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Desglose cuota mensual</div>${desgloseHTML(cat,tipo)}</div>`:''}
+    ${proyHTML}
+  </div>`;
+  const facs=c.facturas||[];
+  document.getElementById('fac-count').textContent=facs.length?`${facs.length} factura${facs.length!==1?'s':''}`:'' ;
+  if(!facs.length){ document.getElementById('fac-lista').innerHTML=`<div class="empty">Todavía no cargaste facturas.</div>`; return; }
+  const consultaDate=new Date(consultaStr);
+  const hace12=new Date(consultaStr); hace12.setFullYear(hace12.getFullYear()-1); hace12.setDate(hace12.getDate()+1);
+  let html=`<table class="ftable"><thead><tr><th>Fecha</th><th style="text-align:right">Importe</th><th style="text-align:center">En ventana</th><th></th></tr></thead><tbody>`;
+  facs.forEach(f=>{
+    const fd=new Date(f.fecha),en=fd>=hace12&&fd<=consultaDate;
+    html+=`<tr class="${en?'':'fuera'}"><td>${fmtF(f.fecha)}</td><td class="importe" style="text-align:right">${fmt(f.importe)}</td><td style="text-align:center"><span class="badge ${en?'badge-in':'badge-out'}">${en?'Sí':'No'}</span></td><td style="text-align:right"><button class="btn-sm" onclick="eliminarFactura(${f.id})">✕</button></td></tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('fac-lista').innerHTML=html;
+}
+
+// ── TABLA ─────────────────────────────────────────────────────────
+function renderTabla(){
+  const tipo=document.getElementById('tipo-tabla').value;
+  const s=tipo==='s';
+  let html=`<table class="tabla"><thead><tr><th>Cat.</th><th>Tope anual</th><th>Imp. integrado</th><th>SIPA</th><th>Obra social</th><th style="color:var(--blue)">IIBB ARBA</th><th>Total</th></tr></thead><tbody>`;
+  CATS.forEach(c=>{
+    const imp=s?c.imp_s:c.imp_b,sipa=s?c.sipa_s:c.sipa_b,os=s?c.os_s:c.os_b,arba=s?c.arba_s:c.arba_b;
+    html+=`<tr><td style="color:${catColor(c.c)};font-weight:700">${c.c}</td><td>${fmt(c.tope)}</td><td>${fmt(imp)}</td><td>${fmt(sipa)}</td><td>${fmt(os)}</td><td style="color:var(--blue)">${fmt(arba)}</td><td>${fmt(imp+sipa+os+arba)}</td></tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('tabla-cont').innerHTML=html;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+(async function initApp(){
+  // Ver si hay sesión guardada
+  let codigoGuardado = null;
+  try{ codigoGuardado=localStorage.getItem('mono_cliente_codigo'); }catch(e){}
+
+  await cargarNube();
+
+  if(codigoGuardado && todosClientes[codigoGuardado]){
+    miCodigo=codigoGuardado;
+    iniciarApp();
+  }
+  // Si no hay sesión, queda en la pantalla de login
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
