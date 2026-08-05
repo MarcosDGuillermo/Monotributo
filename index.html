@@ -353,8 +353,8 @@ table.tabla td:first-child{font-weight:700;font-size:14px;font-family:var(--disp
 </div>
 
 <script>
-// ── DATOS ──────────────────────────────────────────────────────────
-const CATS = [
+// ── DATOS (fallback hardcodeado — se sobreescribe con los del Sheet) ──
+const CATS_FALLBACK = [
   {c:'A', tope:12009410.45,  imp_s:5585.77,    imp_b:5585.77,    sipa_s:18246.86, sipa_b:18246.86, os_s:25694.55, os_b:25694.55, arba_s:11505,  arba_b:10010},
   {c:'B', tope:17595182.74,  imp_s:10612.98,   imp_b:10612.98,   sipa_s:20071.55, sipa_b:20071.55, os_s:25694.55, os_b:25694.55, arba_s:18720,  arba_b:16275},
   {c:'C', tope:24670494.31,  imp_s:18246.86,   imp_b:16757.32,   sipa_s:22078.71, sipa_b:22078.71, os_s:25694.55, os_b:25694.55, arba_s:29260,  arba_b:25450},
@@ -367,6 +367,7 @@ const CATS = [
   {c:'J', tope:105012519.20, imp_s:977510.14,  imp_b:391004.07,  sipa_s:112892.16,sipa_b:112892.16,os_s:78897.46, os_b:78897.46, arba_s:302140, arba_b:262730},
   {c:'K', tope:126610838.75, imp_s:1368514.20, imp_b:456171.40,  sipa_s:158049.02,sipa_b:158049.02,os_s:87882.82, os_b:87882.82, arba_s:420750, arba_b:365870},
 ];
+let CATS = [...CATS_FALLBACK]; // se reemplaza con los del Sheet al iniciar
 
 const CAT_COLORS = {A:'#3f8f5f',B:'#3f8f5f',C:'#3f8f5f',D:'#3f8f5f',E:'#c1830f',F:'#c1830f',G:'#c1830f',H:'#c1830f',I:'#c23b52',J:'#c23b52',K:'#c23b52'};
 const catColor = c => CAT_COLORS[c] || '#7d7a6e';
@@ -392,6 +393,7 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 // la app funciona 100% local (como antes), sin sincronizar entre dispositivos.
 const API_URL = 'PON_TU_URL_ACA';
 const DATA_KEY = 'monotributo_clientes_v2';
+const CATS_KEY  = 'monotributo_cats_v1';
 let syncTimer = null;
 
 function setSyncStatus(txt, color){
@@ -428,6 +430,14 @@ async function cargarLS(){
   if(!nubeActiva()) return;
   setSyncStatus('Sincronizando…','#c1830f');
   try{
+    // Cargar CATS del Sheet (fuente única de verdad para los valores)
+    const resCats=await fetch(`${API_URL}?key=${CATS_KEY}`);
+    const txtCats=await resCats.text();
+    if(txtCats&&txtCats!=='null'){
+      const cats=JSON.parse(txtCats);
+      if(Array.isArray(cats)&&cats.length===11) CATS=cats;
+    }
+    // Cargar datos de clientes
     const res=await fetch(`${API_URL}?key=${DATA_KEY}`);
     const txt=await res.text();
     if(txt&&txt!=='null'){ clientes=JSON.parse(txt); try{ localStorage.setItem('mono_v2',JSON.stringify(clientes)); }catch(e){} }
