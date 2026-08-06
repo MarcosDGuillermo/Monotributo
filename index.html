@@ -26,6 +26,16 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.55}
 
+/* LOGIN ASESOR */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 32px rgba(51,40,45,.10)}
+.login-logo{font-family:var(--display);font-size:40px;font-weight:700;background:linear-gradient(120deg,#8a4267,#a63d68);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--text-muted);margin-bottom:28px}
+.login-card label{text-align:left}
+.login-card input{margin-bottom:14px}
+#login-error{font-size:12px;color:var(--red);min-height:16px;margin-bottom:8px}
+.asesor-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);padding:5px 14px;border-radius:999px;font-size:12px;font-weight:600;color:#fff;margin-left:8px}
+
 /* HEADER — franja tibia, nunca negra */
 .app-header{background:linear-gradient(120deg,#8a4267,#a63d68 55%,#c1683f);color:#fff;padding:18px 26px;display:flex;align-items:center;gap:14px;position:relative;border-radius:0 0 22px 22px;box-shadow:0 6px 20px rgba(166,61,104,.18)}
 .app-header h1{font-family:var(--display);font-size:21px;font-weight:600;letter-spacing:0}
@@ -153,11 +163,27 @@ table.tabla td:first-child{font-weight:700;font-size:14px;font-family:var(--disp
 </head>
 <body>
 
+<!-- LOGIN ASESOR -->
+<div id="screen-login" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">// M</div>
+    <div class="login-sub">Panel de Monotributo · Asesores</div>
+    <label>Código de acceso</label>
+    <input type="text" id="login-codigo" placeholder="Ingresá tu código" autocomplete="off"
+      onkeydown="if(event.key==='Enter') ingresarAsesor()"/>
+    <div id="login-error"></div>
+    <button class="btn btn-primary" onclick="ingresarAsesor()" style="width:100%;margin-top:4px">Ingresar</button>
+  </div>
+</div>
+
 <!-- HEADER -->
+<div id="main-app" style="display:none">
 <div class="app-header" id="main-header">
   <h1>Monotributo</h1>
   <span>Panel de categorización · Prov. Buenos Aires</span>
   <span id="sync-status" style="margin-left:auto;font-family:var(--sans);font-weight:600;font-size:11px;color:#f3d9e4"></span>
+  <span class="asesor-badge" id="asesor-badge"></span>
+  <button class="header-back" onclick="cerrarSesionAsesor()" style="margin-left:8px">Salir</button>
 </div>
 
 <!-- MODAL NUEVO CLIENTE -->
@@ -352,6 +378,8 @@ table.tabla td:first-child{font-weight:700;font-size:14px;font-family:var(--disp
   </div>
 </div>
 
+</div><!-- /main-app -->
+
 <script>
 // ── DATOS (fallback hardcodeado — se sobreescribe con los del Sheet) ──
 const CATS_FALLBACK = [
@@ -392,8 +420,18 @@ const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 // como Aplicación web (termina en /exec). Mientras diga "PON_TU_URL_ACA",
 // la app funciona 100% local (como antes), sin sincronizar entre dispositivos.
 const API_URL = 'https://script.google.com/macros/s/AKfycbyGTfcHYbm9M3xm6J9u59DG7NIR2uHwblubVOYF3K_tnUT-gafL-n3VhwYEJlhPCEuo/exec';
-const DATA_KEY = 'monotributo_clientes_v2';
 const CATS_KEY  = 'monotributo_cats_v1';
+
+// ── ASESORES — agregar uno por cada asesor ────────────────────────
+// codigo: lo que escribe para entrar | nombre: aparece en el header
+// dataKey: clave en el Sheet donde se guardan SUS clientes
+const ASESORES = {
+  'colo2024':        { nombre: 'Colo',        dataKey: 'mono_asesor_colo_clientes' },
+  'contadora2024':   { nombre: 'Contadora',   dataKey: 'mono_asesor_contadora_clientes' },
+};
+
+let asesorActivo = null; // se setea al hacer login
+let DATA_KEY = '';       // se asigna según el asesor que entra
 let syncTimer = null;
 
 function setSyncStatus(txt, color){
@@ -406,7 +444,7 @@ function setSyncStatus(txt, color){
 function nubeActiva(){ return API_URL && !API_URL.includes('PON_TU_URL_ACA'); }
 
 function guardarLS(){
-  try{ localStorage.setItem('mono_v2',JSON.stringify(clientes)); }catch(e){}
+  try{ localStorage.setItem(DATA_KEY,JSON.stringify(clientes)); }catch(e){}
   if(!nubeActiva()) return;
   clearTimeout(syncTimer);
   setSyncStatus('Guardando…','#c1830f');
@@ -426,7 +464,7 @@ async function subirNube(){
 }
 
 async function cargarLS(){
-  try{ const d=localStorage.getItem('mono_v2'); if(d) clientes=JSON.parse(d); }catch(e){}
+  try{ const d=localStorage.getItem(DATA_KEY); if(d) clientes=JSON.parse(d); }catch(e){}
   if(!nubeActiva()) return;
   setSyncStatus('Sincronizando…','#c1830f');
   try{
@@ -440,7 +478,7 @@ async function cargarLS(){
     // Cargar datos de clientes
     const res=await fetch(`${API_URL}?key=${DATA_KEY}`);
     const txt=await res.text();
-    if(txt&&txt!=='null'){ clientes=JSON.parse(txt); try{ localStorage.setItem('mono_v2',JSON.stringify(clientes)); }catch(e){} }
+    if(txt&&txt!=='null'){ clientes=JSON.parse(txt); try{ localStorage.setItem(DATA_KEY,JSON.stringify(clientes)); }catch(e){} }
     setSyncStatus('Sincronizado ✓','#7d7a6e');
   }catch(e){ setSyncStatus('Sin conexión (datos locales)','#c1830f'); }
 }
@@ -902,9 +940,50 @@ function renderTabla(){
 }
 
 // ── INIT ───────────────────────────────────────────────────────────
-(async function initApp(){
+// ── LOGIN ASESOR ──────────────────────────────────────────────────
+async function ingresarAsesor(){
+  const codigo = document.getElementById('login-codigo').value.trim();
+  const errEl  = document.getElementById('login-error');
+  const asesor = ASESORES[codigo];
+  if(!asesor){ errEl.textContent = 'Código incorrecto.'; return; }
+  asesorActivo = asesor;
+  DATA_KEY = asesor.dataKey;
+  try{ localStorage.setItem('mono_asesor_codigo', codigo); }catch(e){}
+  mostrarApp();
   await cargarLS();
   renderLista();
+}
+
+function mostrarApp(){
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  // Mostrar nombre del asesor en el header
+  const badge = document.getElementById('asesor-badge');
+  if(badge) badge.textContent = asesorActivo.nombre;
+}
+
+function cerrarSesionAsesor(){
+  try{ localStorage.removeItem('mono_asesor_codigo'); }catch(e){}
+  asesorActivo = null; DATA_KEY = ''; clientes = {};
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('login-codigo').value = '';
+  document.getElementById('login-error').textContent = '';
+}
+
+(async function initApp(){
+  // Ver si hay sesión de asesor guardada
+  let codigoGuardado = null;
+  try{ codigoGuardado = localStorage.getItem('mono_asesor_codigo'); }catch(e){}
+  if(codigoGuardado && ASESORES[codigoGuardado]){
+    asesorActivo = ASESORES[codigoGuardado];
+    DATA_KEY = asesorActivo.dataKey;
+    mostrarApp();
+    await cargarLS();
+    renderLista();
+  } else {
+    document.getElementById('screen-login').style.display = 'flex';
+  }
 })();
 
 // ── PWA: registro del service worker ─────────────────────────────
